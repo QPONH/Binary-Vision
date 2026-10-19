@@ -1,0 +1,2815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+视频二值化视觉转换器
+</title>
+
+
+<style>
+
+
+*{
+    box-sizing:border-box;
+}
+
+
+
+body{
+
+    margin:0;
+
+    background:#111827;
+
+    color:#e5e7eb;
+
+    font-family:
+
+    "Segoe UI",
+    "Microsoft YaHei",
+    sans-serif;
+
+}
+
+
+
+.container{
+
+    max-width:1200px;
+
+    margin:auto;
+
+    padding:25px;
+
+}
+
+
+
+h1{
+
+    text-align:center;
+
+    font-size:30px;
+
+    margin-bottom:25px;
+
+}
+
+
+
+.card{
+
+    background:#1f2937;
+
+    border-radius:14px;
+
+    padding:20px;
+
+    margin-bottom:20px;
+
+    box-shadow:
+
+    0 10px 30px rgba(0,0,0,.3);
+
+}
+
+
+
+.row{
+
+    display:flex;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+
+}
+
+
+
+button{
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    padding:10px 18px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+}
+
+
+button:hover{
+
+    background:#3b82f6;
+
+}
+
+
+
+input[type=file]{
+
+
+    color:white;
+
+}
+
+
+
+input[type=range]{
+
+
+    width:250px;
+
+}
+
+
+
+
+.canvas-box{
+
+
+    width:100%;
+
+    background:#000;
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    display:flex;
+
+    justify-content:center;
+
+}
+
+
+
+canvas{
+
+
+    max-width:100%;
+
+    height:auto;
+
+}
+
+
+
+.control-item{
+
+    margin:10px 0;
+
+}
+
+
+
+label{
+
+    display:inline-block;
+
+    min-width:120px;
+
+}
+
+
+
+.status{
+
+
+    padding:12px;
+
+    background:#111827;
+
+    border-radius:8px;
+
+    color:#93c5fd;
+
+}
+
+
+
+.time{
+
+
+    font-size:18px;
+
+    margin-top:10px;
+
+}
+
+
+
+select{
+
+
+    padding:8px;
+
+    background:#374151;
+
+    color:white;
+
+    border-radius:6px;
+
+}
+
+
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+
+<div class="container">
+
+
+<h1>
+🎞 视频二值化视觉转换器
+</h1>
+
+
+
+<div class="card">
+
+
+<h3>
+视频A输入
+</h3>
+
+
+<input 
+type="file"
+id="videoInput"
+accept="video/*">
+
+
+</div>
+
+
+
+
+<div class="card">
+
+
+<h3>
+图片B输入（可选）
+</h3>
+
+
+<input
+type="file"
+id="imageInput"
+accept="image/*">
+
+
+</div>
+
+
+
+
+<div class="card">
+
+
+<h3>
+视觉输出
+</h3>
+
+
+<div class="canvas-box">
+
+
+<canvas id="canvas">
+
+</canvas>
+
+
+</div>
+
+
+
+<video
+id="video"
+style="display:none"
+playsinline>
+
+</video>
+
+
+
+<div class="time">
+
+<span id="currentTime">
+0
+</span>
+
+/
+
+<span id="duration">
+0
+</span>
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="card">
+
+
+<h3>
+参数控制
+</h3>
+
+
+
+<div class="control-item">
+
+<label>
+二值阈值：
+</label>
+
+
+<input
+type="range"
+id="threshold"
+min="0"
+max="255"
+value="128">
+
+
+<span id="thresholdValue">
+128
+</span>
+
+
+</div>
+
+
+
+
+
+<div class="control-item">
+
+
+<label>
+处理模式：
+</label>
+
+
+<select id="mode">
+
+
+<option value="binary">
+普通二值化
+</option>
+
+
+<option value="inverse">
+反向二值化
+</option>
+
+
+<option value="edge">
+边缘增强
+</option>
+
+
+</select>
+
+
+
+</div>
+
+
+
+
+
+<div class="control-item">
+
+
+<label>
+图片融合时间：
+</label>
+
+
+<input
+type="range"
+id="transitionTime"
+min="1"
+max="10"
+value="3">
+
+
+<span id="transitionValue">
+3秒
+</span>
+
+
+
+</div>
+<div class="control-item">
+
+<label>
+插入时间：
+</label>
+
+<input
+type="number"
+id="insertTime"
+min="0"
+value="0"
+style="width:100px">
+
+
+秒
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+<div class="card">
+
+
+<button id="playBtn">
+开始播放
+</button>
+
+
+
+<button id="pauseBtn">
+暂停
+</button>
+
+
+
+<button id="restartBtn">
+重新开始
+</button>
+
+
+</div>
+
+
+
+
+<div class="card">
+
+
+<div class="status" id="status">
+
+等待导入视频...
+
+</div>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
+
+<script>
+
+
+// ===============================
+// 全局变量
+// ===============================
+
+
+const video =
+document.getElementById("video");
+
+
+const canvas =
+document.getElementById("canvas");
+
+
+const ctx =
+canvas.getContext("2d",
+{
+    willReadFrequently:true
+});
+
+
+
+const videoInput =
+document.getElementById("videoInput");
+
+
+
+const imageInput =
+document.getElementById("imageInput");
+
+
+
+const threshold =
+document.getElementById("threshold");
+
+
+
+const thresholdValue =
+document.getElementById("thresholdValue");
+
+
+
+const mode =
+document.getElementById("mode");
+
+
+
+const status =
+document.getElementById("status");
+
+
+
+let videoURL=null;
+
+
+let imageB=null;
+
+
+let animationID=null;
+
+
+let processing=false;
+
+
+
+let firstFrame=null;
+
+// 图片B原始像素
+let imageBData=null;
+
+// 图片B二值像素
+let imageBBinary=null;
+
+// 视频第一帧二值像素
+let vinsertFrameBinary=null;
+
+// 用户指定融合时间点帧
+let insertFrameBinary=null;
+
+let insertTime=0;
+
+let transitionRunning=false;
+
+
+
+
+
+
+// 当前处理尺寸
+
+let width=640;
+
+let height=360;
+
+
+
+
+// ===============================
+// 阈值显示
+// ===============================
+
+
+threshold.oninput=function(){
+
+
+thresholdValue.innerText=this.value;
+
+
+};
+
+
+
+
+
+document
+.getElementById("transitionTime")
+.oninput=function(){
+
+
+document
+.getElementById("transitionValue")
+.innerText=this.value+"秒";
+
+
+};
+
+// ===============================
+// 视频加载系统
+// ===============================
+
+
+function loadVideo(file){
+
+    /*
+        读取用户上传的视频文件
+        创建Video对象资源
+    */
+
+
+    if(!file){
+
+        showStatus("未选择视频文件");
+
+        return;
+
+    }
+
+
+
+    try{
+
+
+        if(videoURL){
+
+            URL.revokeObjectURL(videoURL);
+
+        }
+
+
+
+        videoURL =
+        URL.createObjectURL(file);
+
+
+
+        video.src =
+        videoURL;
+
+
+
+        video.load();
+
+
+
+        video.onloadedmetadata=function(){
+
+
+            /*
+                获取视频尺寸
+
+                为避免高分辨率视频导致卡顿
+                自动限制处理尺寸
+            */
+
+
+            let vw =
+            video.videoWidth;
+
+
+            let vh =
+            video.videoHeight;
+
+
+
+            const maxSize=900;
+
+
+
+            if(vw>maxSize){
+
+                height =
+                Math.round(
+                    vh*maxSize/vw
+                );
+
+
+                width=maxSize;
+
+
+            }
+            else{
+
+
+                width=vw;
+
+                height=vh;
+
+
+            }
+
+
+
+            canvas.width=width;
+
+            canvas.height=height;
+
+
+
+            document
+            .getElementById("duration")
+            .innerText =
+            formatTime(video.duration);
+
+
+
+            showStatus(
+
+            "视频加载成功：" +
+
+            width+" × "+height
+
+            );
+
+
+
+            /*
+                自动读取第一帧
+
+                用于图片B融合
+            */
+
+
+            captureFirstFrame();
+
+
+
+        };
+
+
+
+
+        video.onerror=function(){
+
+
+            showStatus(
+            "视频格式不支持"
+            );
+
+
+        };
+
+
+
+    }
+    catch(e){
+
+
+        showStatus(
+        "视频读取失败"
+        );
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// 图片B加载系统
+// ===============================
+
+
+function loadImage(file){
+
+    /*
+        读取图片B
+
+        同时保存像素数据
+        用于后续融合
+
+    */
+
+
+    let reader =
+    new FileReader();
+
+
+
+    reader.onload=function(e){
+
+
+        let img=new Image();
+
+
+
+        img.onload=function(){
+
+
+            imageB=img;
+
+
+
+            /*
+                创建临时Canvas
+
+                获取图片像素
+
+            */
+
+
+            let temp=
+            document.createElement(
+                "canvas"
+            );
+
+
+            temp.width=width;
+
+            temp.height=height;
+
+
+
+            let tctx=
+            temp.getContext("2d");
+
+
+
+            tctx.drawImage(
+
+                img,
+
+                0,
+
+                0,
+
+                width,
+
+                height
+
+            );
+
+
+
+            imageBData=
+
+            tctx.getImageData(
+
+                0,
+
+                0,
+
+                width,
+
+                height
+
+            );
+
+
+
+            //生成图片B二值图
+
+            imageBBinary=
+
+            binaryConvert(
+
+                imageBData
+
+            );
+
+
+
+            showStatus(
+            "图片B加载完成"
+            );
+
+
+
+        };
+
+
+
+        img.src=e.target.result;
+
+
+
+    };
+
+
+
+    reader.readAsDataURL(file);
+
+}
+
+
+
+
+
+
+
+
+// ===============================
+// 视频第一帧捕获
+// ===============================
+
+
+function captureFirstFrame(){
+
+
+    /*
+        暂停视频
+
+        获取第一帧
+
+        转换成二值化结果
+
+        保存到firstFrame
+    */
+
+
+    video.currentTime=0;
+
+
+
+    video.onseeked=function(){
+
+
+
+        ctx.drawImage(
+
+            video,
+
+            0,
+
+            0,
+
+            width,
+
+            height
+
+        );
+
+
+
+        let frame =
+        ctx.getImageData(
+
+            0,
+
+            0,
+
+            width,
+
+            height
+
+        );
+
+
+
+        firstFrame = frame;
+
+
+        // 保存视频第一帧二值图
+
+        vinsertFrameBinary =
+        binaryConvert(frame);
+
+
+
+        showStatus(
+        "第一帧分析完成"
+        );
+
+
+
+    };
+
+
+}
+
+function captureFrameAtTime(time){
+
+
+    return new Promise(resolve=>{
+
+
+        video.currentTime=time;
+
+
+
+        video.onseeked=function(){
+
+
+
+            ctx.drawImage(
+
+                video,
+
+                0,
+
+                0,
+
+                width,
+
+                height
+
+            );
+
+
+
+            let frame=
+
+            ctx.getImageData(
+
+                0,
+
+                0,
+
+                width,
+
+                height
+
+            );
+
+
+
+            insertFrameBinary=
+
+            binaryConvert(frame);
+
+
+
+            resolve();
+
+
+
+        };
+
+
+    });
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// 文件选择监听
+// ===============================
+
+
+
+videoInput.onchange=function(e){
+
+
+    let file =
+    e.target.files[0];
+
+
+    loadVideo(file);
+
+
+};
+
+
+
+
+
+imageInput.onchange=function(e){
+
+
+    let file =
+    e.target.files[0];
+
+
+    loadImage(file);
+
+
+};
+
+
+
+
+
+
+
+
+// ===============================
+// 状态显示
+// ===============================
+
+
+function showStatus(text){
+
+
+    status.innerText=text;
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// 时间格式化
+// ===============================
+
+
+function formatTime(t){
+
+
+    if(!t || isNaN(t)){
+
+        return "0:00";
+
+    }
+
+
+
+    let m =
+    Math.floor(t/60);
+
+
+
+    let s =
+    Math.floor(t%60);
+
+
+
+    if(s<10){
+
+        s="0"+s;
+
+    }
+
+
+
+    return m+":"+s;
+
+
+}
+// ===============================
+// 视频帧实时处理
+// ===============================
+
+
+function processFrame(){
+
+
+    /*
+        核心循环：
+
+        视频当前帧
+        ↓
+        Canvas读取像素
+        ↓
+        图像算法处理
+        ↓
+        输出Canvas
+
+
+        使用requestAnimationFrame保证流畅
+    */
+
+
+    if(!processing){
+
+        return;
+
+    }
+
+
+
+    if(video.readyState >= 2){
+
+
+        ctx.drawImage(
+
+            video,
+
+            0,
+
+            0,
+
+            width,
+
+            height
+
+        );
+
+
+
+        let frame =
+        ctx.getImageData(
+
+            0,
+
+            0,
+
+            width,
+
+            height
+
+        );
+
+
+
+        let result =
+        binaryConvert(frame);
+
+
+
+        ctx.putImageData(
+
+            result,
+
+            0,
+
+            0
+
+        );
+
+
+
+    }
+
+
+
+    animationID =
+    requestAnimationFrame(
+        processFrame
+    );
+
+
+}
+
+
+
+
+
+
+
+
+// ===============================
+// 二值化核心算法
+// ===============================
+
+
+function binaryConvert(imageData){
+
+
+    /*
+        输入：
+
+        原始RGBA像素
+
+
+        输出：
+
+        二值化RGBA像素
+
+
+        灰度公式：
+
+        gray=
+        0.299R+
+        0.587G+
+        0.114B
+
+    */
+
+
+
+    let data =
+    imageData.data;
+
+
+
+    let output =
+    new ImageData(
+
+        width,
+
+        height
+
+    );
+
+
+
+    let out =
+    output.data;
+
+
+
+    let t =
+    Number(
+        threshold.value
+    );
+
+
+
+
+    let selectedMode =
+    mode.value;
+
+
+
+
+
+    if(selectedMode==="edge"){
+
+
+        return edgeDetect(imageData);
+
+    }
+
+
+
+
+
+
+    for(
+        let i=0;
+        i<data.length;
+        i+=4
+    ){
+
+
+
+        let r=data[i];
+
+        let g=data[i+1];
+
+        let b=data[i+2];
+
+
+
+
+        let gray =
+
+        0.299*r+
+
+        0.587*g+
+
+        0.114*b;
+
+
+
+
+
+        let value;
+
+
+
+
+        //普通黑白
+
+
+        if(gray>t){
+
+            value=255;
+
+        }
+        else{
+
+            value=0;
+
+        }
+
+
+
+
+
+        //黑白反转
+
+
+        if(selectedMode==="inverse"){
+
+
+            value =
+            255-value;
+
+
+        }
+
+
+
+
+
+        out[i]=value;
+
+        out[i+1]=value;
+
+        out[i+2]=value;
+
+
+        out[i+3]=255;
+
+
+
+    }
+
+
+
+
+
+    return output;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ===============================
+// Sobel边缘增强
+// ===============================
+
+
+
+function edgeDetect(imageData){
+
+
+
+    /*
+        简化Sobel边缘检测
+
+        计算相邻像素差异
+
+        用于突出轮廓
+
+    */
+
+
+
+    let src =
+    imageData.data;
+
+
+
+    let output =
+    new ImageData(
+
+        width,
+
+        height
+
+    );
+
+
+
+    let dst =
+    output.data;
+
+
+
+    let t =
+    Number(
+        threshold.value
+    );
+
+
+
+
+
+    for(
+        let y=1;
+        y<height-1;
+        y++
+    ){
+
+
+        for(
+            let x=1;
+            x<width-1;
+            x++
+        ){
+
+
+
+            let index =
+            (y*width+x)*4;
+
+
+
+            let right =
+            (y*width+x+1)*4;
+
+
+
+            let down =
+            ((y+1)*width+x)*4;
+
+
+
+
+            let gray1 =
+            getGray(src,index);
+
+
+
+            let gray2 =
+            getGray(src,right);
+
+
+
+            let gray3 =
+            getGray(src,down);
+
+
+
+
+            let edge =
+            Math.abs(gray1-gray2)
+            +
+            Math.abs(gray1-gray3);
+
+
+
+
+
+            let value =
+            edge>t ? 255:0;
+
+
+
+
+
+            dst[index]=value;
+
+            dst[index+1]=value;
+
+            dst[index+2]=value;
+
+            dst[index+3]=255;
+
+
+
+        }
+
+
+
+    }
+
+
+
+
+    return output;
+
+
+
+}
+
+
+
+
+
+
+
+
+// ===============================
+// 获取像素灰度
+// ===============================
+
+
+function getGray(data,i){
+
+
+
+    return (
+
+        0.299*data[i]+
+
+        0.587*data[i+1]+
+
+        0.114*data[i+2]
+
+    );
+
+
+}
+// ===============================
+// 图片B到视频第一帧过渡动画
+// ===============================
+
+
+function transitionAnimation(){
+
+
+    if(
+        !imageBData
+        ||
+         !insertFrameBinary
+    ){
+
+        playVideo();
+
+        return;
+
+    }
+
+
+
+    let start=
+
+    performance.now();
+
+
+
+    let totalTime=
+
+    Number(
+    document.getElementById("transitionTime").value
+    )
+    *
+    1000;
+
+
+
+    function animate(now){
+
+
+
+        let time=
+
+        now-start;
+
+
+
+        let progress=
+
+        time/totalTime;
+
+
+
+        if(progress>1)
+
+            progress=1;
+
+
+
+
+        let result=
+
+        ctx.createImageData(
+
+            width,
+
+            height
+
+        );
+
+
+
+        let out=result.data;
+
+
+
+
+        let a,b;
+
+
+
+
+        /*
+            第一阶段：
+
+            0-50%
+
+            图片B
+
+            →
+
+            图片B二值图
+
+
+        */
+
+
+
+        if(progress<0.5){
+
+
+
+            let p=
+
+            progress*2;
+
+
+
+            for(
+                let i=0;
+                i<out.length;
+                i+=4
+            ){
+
+
+                out[i]=
+
+                imageBData.data[i]*(1-p)
+
+                +
+
+                imageBBinary.data[i]*p;
+
+
+
+                out[i+1]=
+
+                imageBData.data[i+1]*(1-p)
+
+                +
+
+                imageBBinary.data[i+1]*p;
+
+
+
+                out[i+2]=
+
+                imageBData.data[i+2]*(1-p)
+
+                +
+
+                imageBBinary.data[i+2]*p;
+
+
+
+                out[i+3]=255;
+
+
+            }
+
+
+        }
+
+
+
+
+        /*
+            第二阶段：
+
+            50-100%
+
+            图片B二值
+
+            →
+
+            视频第一帧二值
+
+
+        */
+
+
+        else{
+
+
+            let p=
+
+            (progress-0.5)*2;
+
+
+
+            for(
+                let i=0;
+                i<out.length;
+                i+=4
+            ){
+
+
+
+                out[i]=
+
+                imageBBinary.data[i]*(1-p)
+
+                +
+
+                vinsertFrameBinary.data[i]*p;
+
+
+
+                out[i+1]=
+
+                imageBBinary.data[i+1]*(1-p)
+
+                +
+
+                vinsertFrameBinary.data[i+1]*p;
+
+
+
+                out[i+2]=
+
+                imageBBinary.data[i+2]*(1-p)
+
+                +
+
+                vinsertFrameBinary.data[i+2]*p;
+
+
+
+                out[i+3]=255;
+
+
+            }
+
+
+
+        }
+
+
+
+
+
+        ctx.putImageData(
+
+            result,
+
+            0,
+
+            0
+
+        );
+
+
+
+
+
+        if(progress<1){
+
+
+
+            requestAnimationFrame(
+                animate
+            );
+
+
+        }
+        else{
+
+
+             video.currentTime=
+             insertTime;
+
+
+            playVideo();
+
+
+        }
+
+
+
+    }
+
+
+
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+
+
+
+
+
+
+
+// ===============================
+// 视频播放控制
+// ===============================
+
+
+
+function playVideo(){
+
+
+    /*
+        开始实时处理视频
+
+    */
+
+
+    if(!video.src){
+
+
+        showStatus(
+            "请先选择视频"
+        );
+
+
+        return;
+
+
+    }
+
+
+
+    if(processing){
+
+        return;
+
+    }
+
+
+
+
+    processing=true;
+
+
+
+    video.play();
+
+
+
+
+    processFrame();
+
+
+
+
+    showStatus(
+
+    "正在播放二值化视频..."
+
+    );
+
+
+
+}
+
+
+
+function pixelMorphTransition(){
+
+
+    let start =
+    performance.now();
+
+
+    let duration =
+    Number(
+    document.getElementById(
+    "transitionTime"
+    ).value
+    )*1000;
+
+
+
+    let total =
+    width*height;
+
+
+
+    // 保存每个像素起点状态
+
+    let pixels=[];
+
+
+
+    for(
+    let i=0;
+    i<total;
+    i++
+    ){
+
+
+        let p=i*4;
+
+
+        pixels.push({
+
+            from:
+            imageBBinary.data[p],
+
+            to:
+            insertFrameBinary.data[p],
+
+            delay:
+            Math.random()
+
+        });
+
+
+    }
+
+
+
+
+    function animate(now){
+
+
+
+        let progress =
+        (now-start)/duration;
+
+
+
+        if(progress>1)
+        progress=1;
+
+
+
+
+        let result =
+        ctx.createImageData(
+            width,
+            height
+        );
+
+
+
+        let out=result.data;
+
+
+
+        for(
+        let i=0;
+        i<pixels.length;
+        i++
+        ){
+
+
+
+            let px=pixels[i];
+
+
+
+            let local =
+
+            (progress-px.delay*0.3)
+            /
+            0.7;
+
+
+
+            if(local<0)
+            local=0;
+
+
+
+            if(local>1)
+            local=1;
+
+
+
+
+            let value;
+
+
+
+            if(local<0.5){
+
+
+                value=
+                px.from;
+
+
+            }
+            else{
+
+
+                value=
+                px.to;
+
+
+            }
+
+
+
+            let index=i*4;
+
+
+            out[index]=value;
+
+            out[index+1]=value;
+
+            out[index+2]=value;
+
+            out[index+3]=255;
+
+
+        }
+
+
+
+        ctx.putImageData(
+            result,
+            0,
+            0
+        );
+
+
+
+        if(progress<1){
+
+
+            requestAnimationFrame(
+            animate
+            );
+
+
+        }
+        else{
+
+
+            video.currentTime=
+            insertTime;
+
+
+            playVideo();
+
+
+        }
+
+
+    }
+
+
+
+    requestAnimationFrame(
+    animate
+    );
+
+
+}
+
+
+
+
+function pauseVideo(){
+
+
+    /*
+        暂停处理
+
+    */
+
+
+    processing=false;
+
+
+
+    video.pause();
+
+
+
+    if(animationID){
+
+
+        cancelAnimationFrame(
+            animationID
+        );
+
+
+    }
+
+
+
+    showStatus(
+        "视频暂停"
+    );
+
+
+}
+
+
+
+
+
+
+
+
+function restartVideo(){
+
+
+
+    /*
+        从头重新播放
+
+    */
+
+
+    pauseVideo();
+
+
+
+    video.currentTime=0;
+
+
+
+    setTimeout(()=>{
+
+
+        if(imageB){
+
+
+            captureFrameAtTime(
+
+
+            Number(
+            document.getElementById(
+            "insertTime"
+            ).value
+            )
+        );
+        pixelMorphTransition();
+        
+
+
+        }
+        else{
+
+
+            playVideo();
+
+
+        }
+
+
+
+    },300);
+
+
+
+}
+
+
+
+
+
+
+
+
+// ===============================
+// 播放按钮事件
+// ===============================
+
+
+
+document
+.getElementById("playBtn")
+.onclick=async function(){
+
+
+    if(imageB){
+
+
+        insertTime=
+
+        Number(
+        document.getElementById(
+        "insertTime"
+        ).value
+        );
+
+
+        showStatus(
+        "正在读取第"+
+        insertTime+
+        "秒画面..."
+        );
+
+
+
+        await captureFrameAtTime(
+            insertTime
+        );
+
+
+
+        video.currentTime=
+        insertTime;
+
+
+
+        pixelMorphTransition();
+
+
+
+    }
+
+    else{
+
+
+        playVideo();
+
+
+    }
+
+
+
+};
+
+
+
+
+
+
+document
+.getElementById("pauseBtn")
+.onclick=function(){
+
+
+    pauseVideo();
+
+
+};
+
+
+
+
+
+
+
+document
+.getElementById("restartBtn")
+.onclick=function(){
+
+
+    restartVideo();
+
+
+};
+
+
+
+
+
+
+
+
+// ===============================
+// 视频时间更新
+// ===============================
+
+
+video.ontimeupdate=function(){
+
+
+
+    document
+    .getElementById(
+        "currentTime"
+    )
+    .innerText =
+
+    formatTime(
+        video.currentTime
+    );
+
+
+
+};
+// ===============================
+// Canvas自适应显示优化
+// ===============================
+
+
+function resizeCanvas(){
+
+
+    /*
+        保持视频原始比例
+
+        不进行拉伸
+
+    */
+
+
+    let box =
+    document.querySelector(
+        ".canvas-box"
+    );
+
+
+
+    let maxWidth =
+    box.clientWidth;
+
+
+
+    let ratio =
+    width / height;
+
+
+
+    if(width > maxWidth){
+
+
+        canvas.style.width =
+        maxWidth+"px";
+
+
+        canvas.style.height =
+        (
+            maxWidth/ratio
+        )+"px";
+
+
+
+    }
+    else{
+
+
+        canvas.style.width =
+        width+"px";
+
+
+        canvas.style.height =
+        height+"px";
+
+
+    }
+
+
+}
+
+
+
+
+window.onresize=function(){
+
+
+    resizeCanvas();
+
+
+};
+
+
+
+
+
+
+
+// ===============================
+// 视频加载后优化显示
+// ===============================
+
+
+video.onloadeddata=function(){
+
+
+    resizeCanvas();
+
+
+};
+
+
+
+
+
+
+
+
+
+// ===============================
+// 页面初始化
+// ===============================
+
+
+window.onload=function(){
+
+
+    showStatus(
+
+    "系统准备完成，请导入视频"
+
+    );
+
+
+};
+
+
+
+
+
+
+
+
+
+// ===============================
+// 防止重复播放优化
+// ===============================
+
+
+
+function stopProcessing(){
+
+
+    /*
+        停止所有动画
+
+    */
+
+
+    processing=false;
+
+
+
+    transitionRunning=false;
+
+
+
+    if(animationID){
+
+
+        cancelAnimationFrame(
+            animationID
+        );
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+// ===============================
+// 页面关闭释放资源
+// ===============================
+
+
+
+window.onbeforeunload=function(){
+
+
+
+    stopProcessing();
+
+
+
+    if(videoURL){
+
+
+        URL.revokeObjectURL(
+            videoURL
+        );
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+// ===============================
+// 视频格式检测
+// ===============================
+
+
+
+function checkVideoSupport(file){
+
+
+
+    /*
+        简单检查浏览器支持
+
+    */
+
+
+    if(
+        !file.type.startsWith(
+            "video/"
+        )
+    ){
+
+
+        showStatus(
+
+        "请选择视频文件"
+
+        );
+
+
+        return false;
+
+
+    }
+
+
+
+    return true;
+
+
+}
+
+
+
+
+
+
+
+
+
+// ===============================
+// 图片格式检测
+// ===============================
+
+
+
+function checkImageSupport(file){
+
+
+
+    if(
+        !file.type.startsWith(
+            "image/"
+        )
+    ){
+
+
+        showStatus(
+
+        "请选择图片文件"
+
+        );
+
+
+        return false;
+
+
+    }
+
+
+
+    return true;
+
+
+}
+
+
+
+
+
+
+
+
+
+// ===============================
+// 覆盖原视频选择事件
+// ===============================
+
+
+
+videoInput.onchange=function(e){
+
+
+
+    let file =
+    e.target.files[0];
+
+
+
+    if(
+        checkVideoSupport(file)
+    ){
+
+
+        loadVideo(file);
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+// ===============================
+// 覆盖图片选择事件
+// ===============================
+
+
+
+imageInput.onchange=function(e){
+
+
+
+    let file =
+    e.target.files[0];
+
+
+
+    if(
+        checkImageSupport(file)
+    ){
+
+
+        loadImage(file);
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+// ===============================
+// 键盘快捷控制
+// ===============================
+
+
+
+document.onkeydown=function(e){
+
+
+
+    if(e.code==="Space"){
+
+
+        e.preventDefault();
+
+
+
+        if(processing){
+
+
+            pauseVideo();
+
+
+        }
+        else{
+
+
+            playVideo();
+
+
+        }
+
+
+    }
+
+
+
+};
+
+
+
+</script>
+
+
+
+</body>
+
+</html>
