@@ -1,2 +1,41 @@
-# Binary-Vision
-基于 HTML5 Canvas 与 JavaScript 的视频二值化视觉工具，支持实时二值化、反向处理及边缘增强。/A web-based video binarization tool built with HTML5 Canvas and JavaScript, featuring real-time binarization, inversion, and edge enhancement.
+# 视频二值化视觉转换器
+
+**BadApple!!Generator**
+
+一款基于 HTML5 Canvas 与 JavaScript 的本地网页视频处理工具，可将视频实时转换为黑白二值化效果，并支持图片到视频的像素级过渡。无需安装或服务器，使用现代浏览器即可运行。
+
+## 功能
+
+- **视频处理**：导入本地视频，实时预览处理结果。
+- **多种模式**：
+  - 普通二值化
+  - 反向二值化
+  - 边缘增强
+- **图片融合**：导入图片，先将其二值化，再通过像素迁移过渡到视频画面。
+- **参数调节**：调整黑白阈值、融合时长（1–10 秒）和视频插入时间。
+- **播放控制**：融合完成后跳转至指定时间并继续播放。
+
+## 使用方法
+
+1. 在浏览器中打开软件页面。
+2. 导入本地视频。
+3. （可选）导入一张图片作为过渡起始画面。
+4. 调整处理模式、阈值、融合时长和视频插入时间。
+5. 点击“开始播放”。
+
+## 技术实现
+
+- HTML5、CSS3、JavaScript
+- Canvas API：读取并处理视频帧像素
+- File API、Video API：读取本地文件及控制播放
+- `requestAnimationFrame`：驱动实时处理与动画
+
+## 运行环境
+
+支持现代浏览器，包括 Chrome、Edge、Firefox 和 Safari。建议使用四核及以上 CPU、8 GB 及以上内存。
+
+## 特点
+
+- 无需安装，直接在浏览器运行
+- 视频在本地处理，不会上传服务器
+- 适用于数字艺术、视频特效、图像处理教学与前端实验
